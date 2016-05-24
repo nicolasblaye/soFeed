@@ -95,15 +95,14 @@
         android:layout_toEndOf="@+id/button7"
         android:layout_marginTop="34dp" />
 
-    <Button
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/button7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New?"
-        android:id="@+id/button7"
-        android:layout_marginTop="30dp"
-        android:textColor="#2f41a9"
-        android:background="#9cb4f1"
-        android:layout_below="@+id/button4"
-        android:layout_centerHorizontal="true" />
+        android:src="@android:drawable/ic_dialog_email"
+        android:layout_below="@+id/button3"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="54dp" />
 
 </RelativeLayout>
