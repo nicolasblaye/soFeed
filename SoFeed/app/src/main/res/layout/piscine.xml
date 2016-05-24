@@ -27,16 +27,26 @@
     </android.support.design.widget.AppBarLayout>
 
     <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:textAppearance="?android:attr/textAppearanceMedium"
-    android:text="Piscine"
-    android:id="@+id/textView2"
-    android:textColor="#2f41a9"
-    android:textSize="@dimen/abc_action_button_min_width_overflow_material"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Piscine"
+        android:id="@+id/textView2"
+        android:textColor="#2f41a9"
+        android:textSize="@dimen/abc_action_button_min_width_overflow_material"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="61dp"
         android:layout_below="@+id/appbar"
         android:layout_centerHorizontal="true" />
+    <ImageView
+        android:layout_width="92dp"
+        android:layout_height="56dp"
+        android:id="@+id/imageView"
+        android:src="@drawable/natation"
+        android:layout_weight="0.01"
+        android:layout_marginTop="43dp"
+        android:layout_below="@+id/textView2"
+        android:layout_toLeftOf="@+id/textView2"
+        android:layout_toStartOf="@+id/textView2" />
 
 </RelativeLayout>
