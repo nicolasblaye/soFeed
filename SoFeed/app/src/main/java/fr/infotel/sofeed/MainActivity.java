@@ -1,12 +1,9 @@
 package fr.infotel.sofeed;
 
 import android.app.ListFragment;
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -59,7 +56,8 @@ public class MainActivity extends AppCompatActivity{
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // create tabMenu
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Home"));
@@ -101,11 +99,6 @@ public class MainActivity extends AppCompatActivity{
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationIcon(R.drawable.ic_navigation);
-
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                toolbar, R.string.drawer_open, R.string.drawer_close){
 
@@ -125,7 +118,6 @@ public class MainActivity extends AppCompatActivity{
         };
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-
 
 
 
@@ -165,12 +157,9 @@ public class MainActivity extends AppCompatActivity{
     private void selectItem(int position) {
         Bundle args = new Bundle();
         if (!mChat[position].equals("Employés") && !mChat[position].equals("Projet")){
-            String chatRoom = mChat[position];
+            String chat_room = mChat[position];
             // Highlight the selected item, update the title, and close the drawer
             mDrawerList.setItemChecked(position, true);
-            Intent intent = new Intent(this,ChatActivity.class);
-            intent.putExtra("CHATROOM", chatRoom);
-            startActivity(intent);
             mDrawerLayout.closeDrawer(mDrawerList);
         }
         //args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);

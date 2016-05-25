@@ -19,7 +19,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".PiscineActivity"/>
-        <activity android:name=".ChatActivity"/>
     </application>
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+
 </manifest>
