@@ -35,18 +35,57 @@
         android:textColor="#2f41a9"
         android:textSize="@dimen/abc_action_button_min_width_overflow_material"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="61dp"
         android:layout_below="@+id/appbar"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="33dp" />
+
+
     <ImageView
         android:layout_width="92dp"
         android:layout_height="56dp"
         android:id="@+id/imageView"
         android:src="@drawable/natation"
-        android:layout_weight="0.01"
-        android:layout_marginTop="43dp"
+        android:layout_marginTop="39dp"
         android:layout_below="@+id/textView2"
-        android:layout_toLeftOf="@+id/textView2"
-        android:layout_toStartOf="@+id/textView2" />
+        android:layout_alignLeft="@+id/textView3"
+        android:layout_alignStart="@+id/textView3" />
+
+    <ImageView
+        android:layout_width="92dp"
+        android:layout_height="56dp"
+        android:id="@+id/imageView2"
+        android:src="@drawable/natation2"
+        android:layout_alignTop="@+id/imageView"
+        android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:layout_width="92dp"
+        android:layout_height="56dp"
+        android:id="@+id/imageView3"
+        android:src="@drawable/natation3"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_alignRight="@+id/textView3"
+        android:layout_alignEnd="@+id/textView3" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Prochain rendez-vous et/ou évènement"
+        android:id="@+id/textView3"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="#2f41a9" />
+
+    <CalendarView
+        android:layout_width="70dp"
+        android:layout_height="200dp"
+        android:id="@+id/calendarView"
+        android:layout_below="@+id/textView3"
+        android:layout_marginTop="36dp"
+        android:layout_alignRight="@+id/imageView3"
+        android:layout_alignEnd="@+id/imageView3"
+        android:layout_alignLeft="@+id/imageView"
+        android:layout_alignStart="@+id/imageView" />
 
 </RelativeLayout>
