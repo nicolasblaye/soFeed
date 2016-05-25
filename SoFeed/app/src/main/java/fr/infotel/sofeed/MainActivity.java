@@ -5,6 +5,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -20,9 +21,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements FragmentDrawer.FragmentDrawerListener{
+public class MainActivity extends AppCompatActivity{
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -32,9 +36,12 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-
+    private String[] mChat;
     private DrawerLayout mDrawerLayout;
-    private FragmentDrawer drawerFragment;
+    private ListView mDrawerList;
+    private CharSequence mTitle;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private CharSequence mDrawerTitle;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -49,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // create tabMenu
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Home"));
@@ -83,10 +91,34 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
             }
         });
 
-        drawerFragment = (FragmentDrawer)
-                getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
-        drawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), toolbar);
-        drawerFragment.setDrawerListener(this);
+        mChat = getResources().getStringArray(R.array.nav_drawer_labels);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this,R.layout.drawer_list_item, mChat));
+
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        mTitle = mDrawerTitle = getTitle();
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+               toolbar, R.string.drawer_open, R.string.drawer_close){
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                getSupportActionBar().setTitle(mTitle);
+                invalidateOptionsMenu();
+            }
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                getSupportActionBar().setTitle(mDrawerTitle);
+                invalidateOptionsMenu();
+            }
+        };
+
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+
 
 
     }
@@ -114,8 +146,28 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onDrawerItemSelected(View view, int position) {
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
 
+    /** Start Chat activity */
+    private void selectItem(int position) {
+        Bundle args = new Bundle();
+        if (!mChat[position].equals("Employés") && !mChat[position].equals("Projet")){
+            String chat_room = mChat[position];
+            // Highlight the selected item, update the title, and close the drawer
+            mDrawerList.setItemChecked(position, true);
+            mDrawerLayout.closeDrawer(mDrawerList);
+        }
+        //args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        mTitle = title;
+        getSupportActionBar().setTitle(mTitle);
     }
 }
