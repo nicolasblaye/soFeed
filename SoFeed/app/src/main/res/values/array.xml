@@ -17,4 +17,10 @@
         <item id=""></item>
 
     </array>
+    <array name="members">
+        <item>Lise</item>
+        <item>Natacha</item>
+        <item>Florian</item>
+        <item>Nicolas</item>
+    </array>
 </resources>

@@ -1,6 +1,6 @@
 <TextView
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
-    android:background="#fff"
+    android:background="?android:colorBackground"
     android:textColor="?colorPrimary"
     android:paddingRight="16dp"
     android:paddingLeft="16dp"
