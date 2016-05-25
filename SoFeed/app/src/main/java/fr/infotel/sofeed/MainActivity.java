@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity{
     private CharSequence mTitle;
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
+    private String username;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -57,6 +58,8 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //username
+        username = this.getIntent().getStringExtra("USERNAME");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -164,12 +167,13 @@ public class MainActivity extends AppCompatActivity{
     /** Start Chat activity */
     private void selectItem(int position) {
         Bundle args = new Bundle();
-        if (!mChat[position].equals("Employés") && !mChat[position].equals("Projet")){
+        if (!mChat[position].equals("Employés") && !mChat[position].equals("Projet")&& !mChat[position].equals("")){
             String chatRoom = mChat[position];
             // Highlight the selected item, update the title, and close the drawer
             mDrawerList.setItemChecked(position, true);
             Intent intent = new Intent(this,ChatActivity.class);
             intent.putExtra("CHATROOM", chatRoom);
+            intent.putExtra("USERNAME", username);
             startActivity(intent);
             mDrawerLayout.closeDrawer(mDrawerList);
         }

@@ -46,6 +46,7 @@ public class PiscineActivity extends AppCompatActivity{
         if (id == android.R.id.home){
             Intent homeIntent = new Intent(this, MainActivity.class);
             homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            homeIntent.putExtra("USERNAME", getIntent().getStringExtra("USERNAME"));
             startActivity(homeIntent);
         }
 

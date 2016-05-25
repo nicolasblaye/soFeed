@@ -12,7 +12,7 @@ import android.widget.TextView;
  * Created by n_bl on 25/05/2016.
  */
 public class ChatActivity extends AppCompatActivity{
-
+    private String username;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -21,6 +21,7 @@ public class ChatActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setTitle("ChatRoom: " + getIntent().getStringExtra("CHATROOM"));
+        username = getIntent().getStringExtra("USERNAME");
     }
 
     @Override
@@ -37,6 +38,7 @@ public class ChatActivity extends AppCompatActivity{
         if (id == android.R.id.home){
             Intent homeIntent = new Intent(this, MainActivity.class);
             homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            homeIntent.putExtra("USERNAME",username);
             startActivity(homeIntent);
         }
 
