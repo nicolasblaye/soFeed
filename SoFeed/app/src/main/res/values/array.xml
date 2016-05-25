@@ -7,7 +7,7 @@
         <item id="lise">Lise</item>
         <item id="natacha">Natacha</item>
         <item id="">Projet</item>
-        <item id=""></item>
+        <item id="SoFeed">SoFeed</item>
         <item id=""></item>
         <item id=""></item>
         <item id=""></item>
@@ -22,5 +22,11 @@
         <item>Natacha</item>
         <item>Florian</item>
         <item>Nicolas</item>
+    </array>
+    <array name="event">
+        <item>Concours infotel</item>
+        <item>Formation REST</item>
+        <item>Jogging</item>
+        <item>Soirée d\'agence</item>
     </array>
 </resources>
