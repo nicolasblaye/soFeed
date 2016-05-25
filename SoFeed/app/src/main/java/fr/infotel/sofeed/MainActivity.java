@@ -3,6 +3,8 @@ package fr.infotel.sofeed;
 import android.app.ListFragment;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -29,6 +31,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.QueueingConsumer;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import fr.infotel.sofeed.utils.RabbitMqUtils;
+
 public class MainActivity extends AppCompatActivity{
 
     /**
@@ -46,6 +58,7 @@ public class MainActivity extends AppCompatActivity{
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private String username;
+    private ConnectionFactory factory;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -128,9 +141,18 @@ public class MainActivity extends AppCompatActivity{
         };
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-
-
+        factory = RabbitMqUtils.getConnectionFactory();
+        final Handler incomingMessageHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                String message = msg.getData().getString("msg");
+                TextView tv = (TextView) findViewById(R.id.textView);
+                Date now = new Date();
+                SimpleDateFormat ft = new SimpleDateFormat ("hh:mm:ss");
+                tv.append(ft.format(now) + ' ' + message + '\n');
+            }
+        };
+        subscribe(incomingMessageHandler, username);
 
     }
 
@@ -175,14 +197,53 @@ public class MainActivity extends AppCompatActivity{
             intent.putExtra("CHATROOM", chatRoom);
             intent.putExtra("USERNAME", username);
             startActivity(intent);
-            mDrawerLayout.closeDrawer(mDrawerList);
         }
-        //args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
     }
 
     @Override
     public void setTitle(CharSequence title) {
         mTitle = title;
         getSupportActionBar().setTitle(mTitle);
+    }
+
+    public void subscribe(final Handler handler, final String username){
+        Thread subscribeThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true) {
+                    try {
+                        Connection connection = factory.newConnection();
+                        com.rabbitmq.client.Channel channel = connection.createChannel();
+                        channel.basicQos(1);
+                        AMQP.Queue.DeclareOk q = channel.queueDeclare();
+
+                        channel.queueBind(q.getQueue(), "amq.fanout", username);
+                        QueueingConsumer consumer = new QueueingConsumer(channel);
+                        channel.basicConsume(q.getQueue(), true, consumer);
+
+                        while (true) {
+                            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                            String message = new String(delivery.getBody());
+                            Log.d("","[r] " + message);
+                            Message msg = handler.obtainMessage();
+                            Bundle bundle = new Bundle();
+                            bundle.putString("msg", message);
+                            msg.setData(bundle);
+                            handler.sendMessage(msg);
+                        }
+                    } catch (InterruptedException e) {
+                        break;
+                    } catch (Exception e1) {
+                        Log.d("", "Connection broken: " + e1.getClass().getName());
+                        try {
+                            Thread.sleep(5000); //sleep and then try again
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        subscribeThread.start();
     }
 }
