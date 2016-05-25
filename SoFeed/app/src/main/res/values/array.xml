@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="nav_drawer_labels">
-        <item>first</item>
-        <item>second</item>
-        <item>third</item>
-        <item>fourth</item>
-        <item>fifth</item>
+        <item id="">Employés</item>
+        <item id="florian">Florian</item>
+        <item id="nicolas">Nicolas</item>
+        <item id="lise">Lise</item>
+        <item id="natacha">Natacha</item>
+        <item id="">Projet</item>
+        <item id="soFeed">SoFeed</item>
     </array>
 </resources>
