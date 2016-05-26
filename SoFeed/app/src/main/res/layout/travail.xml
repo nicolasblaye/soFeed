@@ -43,7 +43,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/projet_actuel"
             android:textColor="@color/colorPrimaryDark"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:id="@+id/description_projet_actuel"/>
     </LinearLayout>
 
     <LinearLayout

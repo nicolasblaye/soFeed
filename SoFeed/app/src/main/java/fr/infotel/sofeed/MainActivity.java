@@ -1,6 +1,10 @@
 package fr.infotel.sofeed;
 
 import android.app.ListFragment;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -8,6 +12,7 @@ import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -143,6 +148,7 @@ public class MainActivity extends AppCompatActivity{
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         factory = RabbitMqUtils.getConnectionFactory();
         notification();
+        triggerNotification("test");
 
     }
 
@@ -228,5 +234,9 @@ public class MainActivity extends AppCompatActivity{
             }
         });
         notificationThread.start();
+    }
+
+    private void triggerNotification(String m){
+
     }
 }

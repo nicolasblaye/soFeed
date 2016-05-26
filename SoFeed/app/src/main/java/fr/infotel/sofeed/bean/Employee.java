@@ -1,6 +1,6 @@
 package fr.infotel.sofeed.bean;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 import java.util.List;
