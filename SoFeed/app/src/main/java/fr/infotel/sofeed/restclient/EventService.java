@@ -20,7 +20,7 @@ public class EventService {
     public static List<Event> getEvents(){
         List<Event>events = null;
         try{
-            URL url = new URL("http://localhost:8080/infotel/event/list");
+            URL url = new URL("http://192.168.1.12:8080/infotel/event/list");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 

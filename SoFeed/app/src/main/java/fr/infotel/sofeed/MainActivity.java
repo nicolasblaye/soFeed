@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -115,6 +116,8 @@ public class MainActivity extends AppCompatActivity{
 
             }
         });
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         mChat = getResources().getStringArray(R.array.nav_drawer_labels);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);

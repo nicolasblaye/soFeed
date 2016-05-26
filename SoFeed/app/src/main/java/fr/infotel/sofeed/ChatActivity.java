@@ -124,8 +124,7 @@ public class ChatActivity extends AppCompatActivity{
                         while (true) {
                             String message = queue.takeFirst();
                             try{
-
-                                ch.basicPublish("", getChatName(username,chatRoom),
+                                ch.basicPublish("amq.fanout", getChatName(username,chatRoom),
                                         null, message.getBytes());
                                 Log.d("", "[s] " + message);
                                 ch.waitForConfirmsOrDie();
@@ -160,10 +159,9 @@ public class ChatActivity extends AppCompatActivity{
                         com.rabbitmq.client.Channel channel = connection.createChannel();
                         channel.basicQos(1);
                         AMQP.Queue.DeclareOk q = channel.queueDeclare();
-
-                        channel.queueBind(q.getQueue(), "", getChatName(username, chatRoom));
+                        channel.queueBind(q.getQueue(), "amq.fanout", getChatName(username,chatRoom));
                         QueueingConsumer consumer = new QueueingConsumer(channel);
-                        channel.basicConsume(q.getQueue(), true, consumer);
+                        channel.basicConsume(getChatName(username, chatRoom), true, consumer);
 
                         while (true) {
                             QueueingConsumer.Delivery delivery = consumer.nextDelivery();

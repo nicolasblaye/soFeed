@@ -21,6 +21,7 @@ import java.util.List;
 
 import fr.infotel.sofeed.R;
 import fr.infotel.sofeed.bean.Event;
+import fr.infotel.sofeed.restclient.EventService;
 
 /**
  * Created by hp1 on 21-01-2015.
@@ -142,6 +143,7 @@ public class AccueilFragment extends Fragment {
         Calendar cal = Calendar.getInstance();
         cal.setTime(today);
         Calendar calEvent = Calendar.getInstance();
+        events = EventService.getEvents();
         mDatasetToday = new ArrayList<String>();
         mDatasetWeek = new ArrayList<String>();
         mDatasetMonth = new ArrayList<String>();

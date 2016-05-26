@@ -13,8 +13,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.Calendar;
+import java.util.List;
 
 import fr.infotel.sofeed.bean.Ticket;
+import fr.infotel.sofeed.restclient.TicketService;
 
 /**
  * Created by nicolas on 22/05/16.
@@ -38,7 +40,12 @@ public class TravailFragment extends Fragment{
         String[]tickets = new String[2];
         tickets[0] = ticket.getName();
         tickets[1] = ticket2.getName();
-        listViewTicket.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.travail_list_item, tickets));
+        List<Ticket> ticks = TicketService.getTickets();
+        String[] tick = new String[ticks.size()];
+        for(int i=0;i<ticks.size();i++){
+            tick[i] = ticks.get(i).getDescription();
+        }
+        listViewTicket.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.travail_list_item, tick));
         return v;
     }
 }

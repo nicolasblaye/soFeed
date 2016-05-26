@@ -15,7 +15,7 @@ public class RabbitMqUtils {
     public static ConnectionFactory getConnectionFactory() {
         if (connectionFactory == null){
             connectionFactory= new ConnectionFactory();
-            connectionFactory.setHost("192.168.1.22");
+            connectionFactory.setHost("192.168.1.12");
             connectionFactory.setAutomaticRecoveryEnabled(false);
 
         }
