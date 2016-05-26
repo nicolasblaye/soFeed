@@ -27,4 +27,6 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.3.0'
     compile group: 'com.rabbitmq', name: 'amqp-client', version: '3.6.2'
     compile group: 'org.codehaus.jackson', name: 'jackson-core-asl', version: '1.9.13'
+    compile group: 'com.sun.jersey', name: 'jersey-json', version: '1.8'
+    compile group: 'com.sun.jersey', name: 'jersey-client', version:'1.8'
 }

@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity{
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private String username;
+    private ConnectionFactory factory;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -140,7 +141,8 @@ public class MainActivity extends AppCompatActivity{
         };
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-
+        factory = RabbitMqUtils.getConnectionFactory();
+        notification();
 
     }
 
@@ -192,5 +194,39 @@ public class MainActivity extends AppCompatActivity{
     public void setTitle(CharSequence title) {
         mTitle = title;
         getSupportActionBar().setTitle(mTitle);
+    }
+    public void notification() {
+        Thread notificationThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Connection connection = factory.newConnection();
+                        com.rabbitmq.client.Channel channel = connection.createChannel();
+                        channel.basicQos(1);
+                        AMQP.Queue.DeclareOk q = channel.queueDeclare();
+
+                        channel.queueBind(q.getQueue(), "", "notification");
+                        QueueingConsumer consumer = new QueueingConsumer(channel);
+                        channel.basicConsume(q.getQueue(), true, consumer);
+
+                        while (true) {
+                            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                            String message = new String(delivery.getBody());
+                        }
+                    } catch (InterruptedException e) {
+                        break;
+                    } catch (Exception e1) {
+                        Log.d("", "Connection broken: " + e1.getClass().getName());
+                        try {
+                            Thread.sleep(5000); //sleep and then try again
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        notificationThread.start();
     }
 }
