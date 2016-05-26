@@ -32,13 +32,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Projet"
+            android:text="Projet: SoFeed"
             android:textColor="@color/colorPrimary"
             android:textSize="25sp"
             android:id="@+id/projet_actuel" />
 
         <TextView
-            android:text="Mon projet de développement avec les coupains"
+            android:text="Design d'une application android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/projet_actuel"
