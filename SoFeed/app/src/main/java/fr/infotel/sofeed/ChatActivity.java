@@ -34,6 +34,8 @@ public class ChatActivity extends AppCompatActivity{
     private String username;
     private ConnectionFactory factory;
     private BlockingDeque<String> queue = new LinkedBlockingDeque<String>();
+    private Thread subscribeThread;
+    private Thread publishThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -48,6 +50,18 @@ public class ChatActivity extends AppCompatActivity{
 
         //start chat services
         factory = RabbitMqUtils.getConnectionFactory();
+        factory = RabbitMqUtils.getConnectionFactory();
+        final Handler incomingMessageHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                String message = msg.getData().getString("msg");
+                TextView tv = (TextView) findViewById(R.id.textView);
+                Date now = new Date();
+                SimpleDateFormat ft = new SimpleDateFormat ("hh:mm:ss");
+                tv.append(ft.format(now) + ' ' + message + '\n');
+            }
+        };
+        subscribe(incomingMessageHandler, username, chatRoom);
         publishToAMQP(username,chatRoom);
         setupPubButton();
 
@@ -68,6 +82,8 @@ public class ChatActivity extends AppCompatActivity{
             Intent homeIntent = new Intent(this, MainActivity.class);
             homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             homeIntent.putExtra("USERNAME",username);
+            publishThread.interrupt();
+            subscribeThread.interrupt();
             startActivity(homeIntent);
         }
 
@@ -81,8 +97,6 @@ public class ChatActivity extends AppCompatActivity{
             e.printStackTrace();
         }
     }
-
-    Thread publishThread;
 
     public void publishToAMQP(final String username, final String chatRoom)
     {
@@ -99,7 +113,7 @@ public class ChatActivity extends AppCompatActivity{
                             String message = queue.takeFirst();
                             try{
 
-                                ch.basicPublish("amq.fanout", chatRoom.toLowerCase(),
+                                ch.basicPublish("amq.fanout", getChatName(username,chatRoom),
                                         null, message.getBytes());
                                 Log.d("", "[s] " + message);
                                 ch.waitForConfirmsOrDie();
@@ -124,6 +138,62 @@ public class ChatActivity extends AppCompatActivity{
         });
         publishThread.start();
     }
+    public void subscribe(final Handler handler, final String username, final String chatRoom){
+        subscribeThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true) {
+                    try {
+                        Connection connection = factory.newConnection();
+                        com.rabbitmq.client.Channel channel = connection.createChannel();
+                        channel.basicQos(1);
+                        AMQP.Queue.DeclareOk q = channel.queueDeclare();
+
+                        channel.queueBind(q.getQueue(), "amq.fanout", getChatName(username, chatRoom));
+                        QueueingConsumer consumer = new QueueingConsumer(channel);
+                        channel.basicConsume(q.getQueue(), true, consumer);
+
+                        while (true) {
+                            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                            String message = new String(delivery.getBody());
+                            Log.d("","[r] " + message);
+                            Message msg = handler.obtainMessage();
+                            Bundle bundle = new Bundle();
+                            bundle.putString("msg", message);
+                            msg.setData(bundle);
+                            handler.sendMessage(msg);
+                        }
+                    } catch (InterruptedException e) {
+                        break;
+                    } catch (Exception e1) {
+                        Log.d("", "Connection broken: " + e1.getClass().getName());
+                        try {
+                            Thread.sleep(5000); //sleep and then try again
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        subscribeThread.start();
+    }
+
+    private String getChatName(String username, String chatRoom) {
+        username = username.toLowerCase();
+        chatRoom = chatRoom.toLowerCase();
+        String chat;
+        if (chatRoom.equals("SoFeed")){
+            return chatRoom;
+        }
+        else if (username.compareTo(chatRoom)>=1){
+            chat = username+"-"+chatRoom;
+        }
+        else{
+            chat = chatRoom+"-"+username;
+        }
+        return chat;
+    }
 
     void setupPubButton() {
         Button button = (Button) findViewById(R.id.publish);
@@ -135,5 +205,12 @@ public class ChatActivity extends AppCompatActivity{
                 et.setText("");
             }
         });
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        publishThread.interrupt();
+        subscribeThread.interrupt();
     }
 }
