@@ -125,7 +125,7 @@ public class ChatActivity extends AppCompatActivity{
                             String message = queue.takeFirst();
                             try{
 
-                                ch.basicPublish("amq.fanout", getChatName(username,chatRoom),
+                                ch.basicPublish("", getChatName(username,chatRoom),
                                         null, message.getBytes());
                                 Log.d("", "[s] " + message);
                                 ch.waitForConfirmsOrDie();
@@ -161,7 +161,7 @@ public class ChatActivity extends AppCompatActivity{
                         channel.basicQos(1);
                         AMQP.Queue.DeclareOk q = channel.queueDeclare();
 
-                        channel.queueBind(q.getQueue(), "amq.fanout", getChatName(username, chatRoom));
+                        channel.queueBind(q.getQueue(), "", getChatName(username, chatRoom));
                         QueueingConsumer consumer = new QueueingConsumer(channel);
                         channel.basicConsume(q.getQueue(), true, consumer);
 
