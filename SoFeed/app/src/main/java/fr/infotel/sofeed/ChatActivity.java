@@ -22,6 +22,7 @@ import com.rabbitmq.client.QueueingConsumer;
 import java.nio.channels.Channel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -36,15 +37,19 @@ public class ChatActivity extends AppCompatActivity{
     private BlockingDeque<String> queue = new LinkedBlockingDeque<String>();
     private Thread subscribeThread;
     private Thread publishThread;
+    private HashMap<String,String> messages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        if (messages==null){
+            messages = new HashMap<String,String>();
+        }
         setContentView(R.layout.chat_activity);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        String chatRoom = getIntent().getStringExtra("CHATROOM");
+        final String chatRoom = getIntent().getStringExtra("CHATROOM");
         setTitle("ChatRoom: " + chatRoom);
         username = getIntent().getStringExtra("USERNAME");
 
@@ -55,10 +60,17 @@ public class ChatActivity extends AppCompatActivity{
             @Override
             public void handleMessage(Message msg) {
                 String message = msg.getData().getString("msg");
-                TextView tv = (TextView) findViewById(R.id.textView);
-                Date now = new Date();
                 SimpleDateFormat ft = new SimpleDateFormat ("hh:mm:ss");
-                tv.append(ft.format(now) + ' ' + message + '\n');
+                Date now = new Date();
+                message = ft.format(now) + ' ' + message + '\n';
+                if (messages.containsKey(chatRoom)){
+                    messages.put(chatRoom,messages.get(chatRoom)+message);
+                }
+                else{
+                    messages.put(chatRoom,message);
+                }
+                TextView tv = (TextView) findViewById(R.id.textView);
+                tv.setText(messages.get(chatRoom));
             }
         };
         subscribe(incomingMessageHandler, username, chatRoom);
