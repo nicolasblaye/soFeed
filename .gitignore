@@ -31,13 +31,13 @@ proguard/
 # Android Studio captures folder
 captures/
 
-*.iml
-.gradle
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
-.DS_Store
-/build
-/captures
+SoFeed/*.iml
+SoFeed/.gradle
+SoFeed/local.properties
+SoFeed/.idea/workspace.xml
+SoFeed/.idea/libraries
+SoFeed/.DS_Store
+SoFeed/build
+SoFeed/captures
 
 misc.xml
