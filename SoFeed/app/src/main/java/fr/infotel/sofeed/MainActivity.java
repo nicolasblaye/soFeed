@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -16,6 +17,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -148,8 +150,6 @@ public class MainActivity extends AppCompatActivity{
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         factory = RabbitMqUtils.getConnectionFactory();
         notification();
-        triggerNotification("test");
-
     }
 
 
@@ -219,6 +219,7 @@ public class MainActivity extends AppCompatActivity{
                         while (true) {
                             QueueingConsumer.Delivery delivery = consumer.nextDelivery();
                             String message = new String(delivery.getBody());
+                            triggerNotification(message);
                         }
                     } catch (InterruptedException e) {
                         break;
@@ -237,6 +238,29 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void triggerNotification(String m){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        // set title
+        alertDialogBuilder.setTitle("Nouvelle Evénement");
+        // set dialog message
+        alertDialogBuilder
+                .setMessage(m)
+                .setCancelable(false)
+                .setPositiveButton("Subscribe",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton("Close",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, just close
+                        // the dialog box and do nothing
+                        dialog.cancel();
+                    }
+                });
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
 
+        // show it
+        alertDialog.show();
     }
 }
