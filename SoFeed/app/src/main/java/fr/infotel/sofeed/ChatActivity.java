@@ -1,10 +1,8 @@
 package fr.infotel.sofeed;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -14,19 +12,25 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 
-import java.nio.channels.Channel;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import fr.infotel.sofeed.utils.HashMapUtils;
 import fr.infotel.sofeed.utils.RabbitMqUtils;
+
+import fr.infotel.sofeed.bean.Message;
 
 /**
  * Created by n_bl on 25/05/2016.
@@ -34,17 +38,12 @@ import fr.infotel.sofeed.utils.RabbitMqUtils;
 public class ChatActivity extends AppCompatActivity{
     private String username;
     private ConnectionFactory factory;
-    private BlockingDeque<String> queue = new LinkedBlockingDeque<String>();
-    private Thread subscribeThread;
-    private Thread publishThread;
-    private HashMap<String,String> messages;
+    private HashMap<String,String> messages = HashMapUtils.getMap();
+    private BlockingDeque<String> queue= new LinkedBlockingDeque<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        if (messages==null){
-            messages = new HashMap<String,String>();
-        }
         setContentView(R.layout.chat_activity);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -53,28 +52,39 @@ public class ChatActivity extends AppCompatActivity{
         setTitle("ChatRoom: " + chatRoom);
         username = getIntent().getStringExtra("USERNAME");
 
-        //start chat services
         factory = RabbitMqUtils.getConnectionFactory();
-        factory = RabbitMqUtils.getConnectionFactory();
+        publishToAMQP();
+        setupPubButton();
+
         final Handler incomingMessageHandler = new Handler() {
             @Override
-            public void handleMessage(Message msg) {
-                String message = msg.getData().getString("msg");
+            public void handleMessage(android.os.Message msg) {
                 SimpleDateFormat ft = new SimpleDateFormat ("hh:mm:ss");
                 Date now = new Date();
+                // Map the response
+                String message;
+                ObjectMapper mapper = new ObjectMapper();
+                Message messageO = null;
+                try {
+                    messageO = mapper.readValue(msg.getData().getString("msg"), Message.class);
+                    message = messageO.getMessage();
+                } catch (IOException e) {
+                    message = msg.getData().getString("msg");
+                    messageO.setSender("null");
+                }
                 message = ft.format(now) + ' ' + message + '\n';
-                if (messages.containsKey(chatRoom)){
-                    messages.put(chatRoom,messages.get(chatRoom)+message);
+                String sender = messageO.getSender();
+                if (messages.containsKey(sender)){
+                    messages.put(sender,messages.get(sender)+message);
                 }
                 else{
-                    messages.put(chatRoom,message);
+                    messages.put(sender,message);
                 }
                 TextView tv = (TextView) findViewById(R.id.textView);
                 tv.setText(messages.get(chatRoom));
             }
         };
-        subscribe(incomingMessageHandler, username, chatRoom);
-        publishToAMQP(username,chatRoom);
+        subscribe(incomingMessageHandler);
         setupPubButton();
 
     }
@@ -94,23 +104,100 @@ public class ChatActivity extends AppCompatActivity{
             Intent homeIntent = new Intent(this, MainActivity.class);
             homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             homeIntent.putExtra("USERNAME",username);
-            publishThread.interrupt();
-            subscribeThread.interrupt();
             startActivity(homeIntent);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    void publishMessage(String message, String username) {
+    void setupPubButton() {
+        Button button = (Button) findViewById(R.id.publish);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                EditText et = (EditText) findViewById(R.id.text);
+                et.setText("");
+            }
+        });
+    }
+
+
+    Thread subscribeThread;
+    Thread publishThread;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        publishThread.interrupt();
+        subscribeThread.interrupt();
+    }
+
+
+    void publishMessage(String message) {
+        //Adds a message to internal blocking queue
+        Message messageO = new Message();
+        messageO.setSender(username);
+        messageO.setMessage(message);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = "";
         try {
-            queue.putLast(username+": "+message);
+            json = mapper.writeValueAsString(messageO);
+        } catch (JsonProcessingException e) {
+            json = message;
+        }
+        try {
+            Log.d("","[q] " + json);
+            queue.putLast(json);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    public void publishToAMQP(final String username, final String chatRoom)
+    void subscribe(final Handler handler)
+    {
+        subscribeThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true) {
+                    try {
+                        Connection connection = factory.newConnection();
+                        Channel channel = connection.createChannel();
+                        channel.basicQos(1);
+                        AMQP.Queue.DeclareOk q = channel.queueDeclare();
+                        channel.queueBind(q.getQueue(), "amq.fanout", "chat");
+                        QueueingConsumer consumer = new QueueingConsumer(channel);
+                        channel.basicConsume(q.getQueue(), true, consumer);
+
+                        // Process deliveries
+                        while (true) {
+                            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+
+                            String message = new String(delivery.getBody());
+                            Log.d("","[r] " + message);
+
+                            android.os.Message msg = handler.obtainMessage();
+                            Bundle bundle = new Bundle();
+
+                            bundle.putString("msg", message);
+                            msg.setData(bundle);
+                            handler.sendMessage(msg);
+                        }
+                    } catch (InterruptedException e) {
+                        break;
+                    } catch (Exception e1) {
+                        Log.d("", "Connection broken: " + e1.getClass().getName());
+                        try {
+                            Thread.sleep(4000); //sleep and then try again
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        subscribeThread.start();
+    }
+
+    public void publishToAMQP()
     {
         publishThread = new Thread(new Runnable() {
             @Override
@@ -118,14 +205,13 @@ public class ChatActivity extends AppCompatActivity{
                 while(true) {
                     try {
                         Connection connection = factory.newConnection();
-                        com.rabbitmq.client.Channel ch = connection.createChannel();
+                        Channel ch = connection.createChannel();
                         ch.confirmSelect();
 
                         while (true) {
                             String message = queue.takeFirst();
                             try{
-                                ch.basicPublish("amq.fanout", getChatName(username,chatRoom),
-                                        null, message.getBytes());
+                                ch.basicPublish("amq.fanout", "chat", null, message.getBytes());
                                 Log.d("", "[s] " + message);
                                 ch.waitForConfirmsOrDie();
                             } catch (Exception e){
@@ -148,79 +234,5 @@ public class ChatActivity extends AppCompatActivity{
             }
         });
         publishThread.start();
-    }
-    public void subscribe(final Handler handler, final String username, final String chatRoom){
-        subscribeThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(true) {
-                    try {
-                        Connection connection = factory.newConnection();
-                        com.rabbitmq.client.Channel channel = connection.createChannel();
-                        channel.basicQos(1);
-                        AMQP.Queue.DeclareOk q = channel.queueDeclare();
-                        channel.queueBind(q.getQueue(), "amq.fanout", getChatName(username,chatRoom));
-                        QueueingConsumer consumer = new QueueingConsumer(channel);
-                        channel.basicConsume(getChatName(username, chatRoom), true, consumer);
-
-                        while (true) {
-                            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-                            String message = new String(delivery.getBody());
-                            Log.d("","[r] " + message);
-                            Message msg = handler.obtainMessage();
-                            Bundle bundle = new Bundle();
-                            bundle.putString("msg", message);
-                            msg.setData(bundle);
-                            handler.sendMessage(msg);
-                        }
-                    } catch (InterruptedException e) {
-                        break;
-                    } catch (Exception e1) {
-                        Log.d("", "Connection broken: " + e1.getClass().getName());
-                        try {
-                            Thread.sleep(5000); //sleep and then try again
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
-                }
-            }
-        });
-        subscribeThread.start();
-    }
-
-    private String getChatName(String username, String chatRoom) {
-        username = username.toLowerCase();
-        chatRoom = chatRoom.toLowerCase();
-        String chat;
-        if (chatRoom.equals("SoFeed")){
-            return chatRoom;
-        }
-        else if (username.compareTo(chatRoom)>=1){
-            chat = username+"-"+chatRoom;
-        }
-        else{
-            chat = chatRoom+"-"+username;
-        }
-        return chat;
-    }
-
-    void setupPubButton() {
-        Button button = (Button) findViewById(R.id.publish);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                EditText et = (EditText) findViewById(R.id.text);
-                publishMessage(et.getText().toString(), username);
-                et.setText("");
-            }
-        });
-    }
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        publishThread.interrupt();
-        subscribeThread.interrupt();
     }
 }

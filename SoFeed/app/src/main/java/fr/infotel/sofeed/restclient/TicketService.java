@@ -21,7 +21,7 @@ public class TicketService {
     public static List<Ticket> getTickets(){
         List<Ticket>tickets = null;
         try{
-            URL url = new URL("http://192.168.1.12:8080/infotel/employee/2/ticket/list");
+            URL url = new URL("http://192.168.1.77:8080/infotel/employee/2/ticket/list");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 

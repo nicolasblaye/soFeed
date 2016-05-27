@@ -2,10 +2,10 @@
 <resources>
     <array name="nav_drawer_labels">
         <item id="">Employés</item>
-        <item id="florian">Florian</item>
-        <item id="nicolas">Nicolas</item>
-        <item id="lise">Lise</item>
-        <item id="natacha">Natacha</item>
+        <item id="florian">florian</item>
+        <item id="nicolas">nicolas</item>
+        <item id="lise">lise</item>
+        <item id="natacha">natacha</item>
         <item id="">Projet</item>
         <item id="SoFeed">SoFeed</item>
         <item id=""></item>

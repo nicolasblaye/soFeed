@@ -12,6 +12,7 @@ import android.widget.CalendarView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -37,11 +38,20 @@ public class TravailFragment extends Fragment{
         ticket.setName("Développer le Service REST");
         Ticket ticket2 = new Ticket();
         ticket2.setName("Set up le projet GitHub");
-        String[]tickets = new String[2];
-        tickets[0] = ticket.getName();
-        tickets[1] = ticket2.getName();
-        List<Ticket> ticks = TicketService.getTickets();
+        List<Ticket>tickets = new ArrayList<Ticket>();
+        tickets.add(ticket);
+        tickets.add(ticket2);
+        List<Ticket> ticks = null;
+        try{
+            ticks = TicketService.getTickets();
+        }catch (NullPointerException e){
+
+        }
+        if (ticks==null){
+            ticks = tickets;
+        }
         String[] tick = new String[ticks.size()];
+
         for(int i=0;i<ticks.size();i++){
             tick[i] = ticks.get(i).getDescription();
         }

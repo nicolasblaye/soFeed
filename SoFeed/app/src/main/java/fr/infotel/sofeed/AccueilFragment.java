@@ -121,7 +121,7 @@ public class AccueilFragment extends Fragment {
     private void initDataset() throws ParseException{
         // Stub dataset, will need to connect to rest
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
-        List<Event> events = new ArrayList<Event>();
+        List<Event> events = null;
         Event event1 = new Event();
         event1.setName("Désigner une application smartphone");
         event1.setStartDate(formatter.parse("27-mai-2016"));
@@ -134,16 +134,26 @@ public class AccueilFragment extends Fragment {
         Event event = new Event();
         event.setName("Réunion Projet SoFeed à 18h");
         event.setStartDate(formatter.parse("26-mai-2016"));
-        events.add(event);
-        events.add(event1);
-        events.add(event2);
-        events.add(event3);
+
+        try{
+            events = EventService.getEvents();
+        }catch(NullPointerException e) {
+
+        }
+        if (events == null) {
+            events = new ArrayList<Event>();
+            events.add(event);
+            events.add(event1);
+            events.add(event2);
+            events.add(event3);
+        }
+
         // Handle the list of event and put them in three tabs
         Date today = new Date();
         Calendar cal = Calendar.getInstance();
         cal.setTime(today);
         Calendar calEvent = Calendar.getInstance();
-        events = EventService.getEvents();
+
         mDatasetToday = new ArrayList<String>();
         mDatasetWeek = new ArrayList<String>();
         mDatasetMonth = new ArrayList<String>();
@@ -162,6 +172,15 @@ public class AccueilFragment extends Fragment {
         mToday = new String[mDatasetToday.size()];
         mWeek = new String[mDatasetWeek.size()];
         mMonth = new String[mDatasetMonth.size()];
+        if (mDatasetMonth.size()==0){
+            mMonth = new String[]{"Aucun événement"};
+        }
+        if (mDatasetWeek.size()==0){
+            mWeek = new String[]{"Aucun événement"};
+        }
+        if (mDatasetToday.size()==0){
+            mToday = new String[]{"Aucun événement"};
+        }
         for (int i=0;i<mDatasetToday.size();i++){
             mToday[i] = mDatasetToday.get(i);
         }
