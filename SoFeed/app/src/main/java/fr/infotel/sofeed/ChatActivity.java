@@ -79,7 +79,7 @@ public class ChatActivity extends AppCompatActivity{
                     messageO.setChatRoom("null");
                 }
                 if (isMessageForUsername(messageO,username)) {
-                    message = ft.format(now) + ' ' + message + '\n';
+                    message = ft.format(now) + ' ' + messageO.getSender() + ": "+ message + '\n';
                     String sender = messageO.getSender();
                     String chatRoom = messageO.getChatRoom();
                     if (messages.containsKey(chatRoom)) {
