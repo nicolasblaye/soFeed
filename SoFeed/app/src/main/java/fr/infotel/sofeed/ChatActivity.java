@@ -40,6 +40,7 @@ public class ChatActivity extends AppCompatActivity{
     private ConnectionFactory factory;
     private HashMap<String,String> messages = HashMapUtils.getMap();
     private BlockingDeque<String> queue= new LinkedBlockingDeque<String>();
+    private String currentChatRoom="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -48,13 +49,17 @@ public class ChatActivity extends AppCompatActivity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        final String chatRoom = getIntent().getStringExtra("CHATROOM");
-        setTitle("ChatRoom: " + chatRoom);
+        currentChatRoom = getIntent().getStringExtra("CHATROOM");
+        setTitle("ChatRoom: " + currentChatRoom);
         username = getIntent().getStringExtra("USERNAME");
 
         factory = RabbitMqUtils.getConnectionFactory();
         publishToAMQP();
         setupPubButton();
+        if (messages.containsKey(currentChatRoom)) {
+            TextView tv = (TextView) findViewById(R.id.textView);
+            tv.setText(messages.get(currentChatRoom));
+        }
 
         final Handler incomingMessageHandler = new Handler() {
             @Override
@@ -71,22 +76,33 @@ public class ChatActivity extends AppCompatActivity{
                 } catch (IOException e) {
                     message = msg.getData().getString("msg");
                     messageO.setSender("null");
+                    messageO.setChatRoom("null");
                 }
-                message = ft.format(now) + ' ' + message + '\n';
-                String sender = messageO.getSender();
-                if (messages.containsKey(sender)){
-                    messages.put(sender,messages.get(sender)+message);
+                if (isMessageForUsername(messageO,username)) {
+                    message = ft.format(now) + ' ' + message + '\n';
+                    String sender = messageO.getSender();
+                    String chatRoom = messageO.getChatRoom();
+                    if (messages.containsKey(chatRoom)) {
+                        messages.put(chatRoom, messages.get(chatRoom) + message);
+                    } else {
+                        messages.put(chatRoom, message);
+                    }
+                    TextView tv = (TextView) findViewById(R.id.textView);
+                    tv.setText(messages.get(currentChatRoom));
                 }
-                else{
-                    messages.put(sender,message);
-                }
-                TextView tv = (TextView) findViewById(R.id.textView);
-                tv.setText(messages.get(chatRoom));
             }
         };
         subscribe(incomingMessageHandler);
         setupPubButton();
 
+    }
+
+    private boolean isMessageForUsername(Message messageO, String username) {
+        if (messageO.getChatRoom().equals(username) || messageO.getSender().equals(username)
+                || messageO.getChatRoom().equals("SoFeed")){
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -116,6 +132,7 @@ public class ChatActivity extends AppCompatActivity{
             @Override
             public void onClick(View arg0) {
                 EditText et = (EditText) findViewById(R.id.text);
+                publishMessage(et.getText().toString());
                 et.setText("");
             }
         });
@@ -136,6 +153,7 @@ public class ChatActivity extends AppCompatActivity{
         //Adds a message to internal blocking queue
         Message messageO = new Message();
         messageO.setSender(username);
+        messageO.setChatRoom(currentChatRoom);
         messageO.setMessage(message);
         ObjectMapper mapper = new ObjectMapper();
         String json = "";

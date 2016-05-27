@@ -5,6 +5,7 @@ package fr.infotel.sofeed.bean;
  */
 public class Message {
     private String sender;
+    private String chatRoom;
     private String message;
 
     public void setSender(String sender){
@@ -19,5 +20,9 @@ public class Message {
     }
     public String getMessage(){
         return this.message;
+    }
+    public void setChatRoom(String chatRoom){this.chatRoom = chatRoom;}
+    public String getChatRoom(){
+        return this.chatRoom;
     }
 }

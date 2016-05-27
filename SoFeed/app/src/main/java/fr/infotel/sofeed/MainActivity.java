@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
                             com.rabbitmq.client.Channel channel = connection.createChannel();
                             channel.basicQos(1);
                             AMQP.Queue.DeclareOk q = channel.queueDeclare();
-                            channel.queueBind(q.getQueue(), "amq.fanout", "notification");
+                            channel.queueBind(q.getQueue(), "amq.direct", "notification");
                             QueueingConsumer consumer = new QueueingConsumer(channel);
                             channel.basicConsume(q.getQueue(), true, consumer);
 
