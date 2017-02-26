@@ -17,7 +17,6 @@ import android.widget.Button;
  * Created by nicolas on 22/05/16.
  */
 public class LoisirFragment extends Fragment implements View.OnClickListener{
-
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v =inflater.inflate(R.layout.loisir,container,false);
@@ -36,6 +35,7 @@ public class LoisirFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.button:
                 Intent piscine = new Intent(getActivity(),PiscineActivity.class);
+                piscine.putExtra("USERNAME",getActivity().getIntent().getStringExtra("USERNAME"));
                 getActivity().startActivity(piscine);
                 break;
         }
